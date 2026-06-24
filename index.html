@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Preventa Diaria — Logicom</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- SheetJS se carga dinámicamente solo para admin/logística -->
 <style>
 /* ── RESET & BASE ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -255,7 +255,7 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
     <div class="search-wrap">
       <div class="search-box">
         <i class="ti ti-search"></i>
-        <input type="text" id="search-input" placeholder="Nombre o código de cliente..." oninput="onSearch(this.value)" autocomplete="off">
+        <input type="text" id="search-input" placeholder="Nombre o código de cliente..." oninput="debouncedSearch(this.value)" autocomplete="off">
       </div>
     </div>
     <div class="chips" id="chips">
@@ -459,17 +459,23 @@ async function cargarPedidos() {
   showLoading('Cargando pedidos...');
   try {
     const res = await gasGet({ action: 'getPedidos' });
-    state.pedidos = (res.pedidos || []).map(p => ({
-      ID_Pedido:           String(p.ID_Pedido           || ''),
-      Codigo_Cliente:      String(p.Codigo_Cliente      || ''),
-      Nombre_Cliente:      String(p.Nombre_Cliente      || ''),
-      Direccion_Cliente:   String(p.Direccion_Cliente   || ''),
-      Rubro_Negocio:       String(p.Rubro_Negocio       || ''),
-      Hoja_Ruta:           String(p.Hoja_Ruta           || ''),
-      Repartidor_Asignado: String(p.Repartidor_Asignado || ''),
-      Tel_Repartidor:      String(p.Tel_Repartidor      || ''),
-      Estado_Pedido:       String(p.Estado_Pedido       || 'En Viaje'),
-    }));
+    state.pedidos = (res.pedidos || []).map(p => {
+      const obj = {
+        ID_Pedido:           String(p.ID_Pedido           || ''),
+        Codigo_Cliente:      String(p.Codigo_Cliente      || ''),
+        Nombre_Cliente:      String(p.Nombre_Cliente      || ''),
+        Direccion_Cliente:   String(p.Direccion_Cliente   || ''),
+        Rubro_Negocio:       String(p.Rubro_Negocio       || ''),
+        Hoja_Ruta:           String(p.Hoja_Ruta           || ''),
+        Repartidor_Asignado: String(p.Repartidor_Asignado || ''),
+        Tel_Repartidor:      String(p.Tel_Repartidor      || ''),
+        Estado_Pedido:       String(p.Estado_Pedido       || 'En Viaje'),
+      };
+      // Índice de búsqueda precalculado — no se recalcula en cada tecla
+      obj._idx = [obj.Nombre_Cliente, obj.Codigo_Cliente, obj.Repartidor_Asignado, obj.Hoja_Ruta]
+        .join(' ').toLowerCase();
+      return obj;
+    });
     state.fechaCarga = res.fecha  || new Date().toLocaleDateString('es-AR');
     document.getElementById('fecha-label').textContent =
       `${state.pedidos.length} pedidos — ${state.fechaCarga}`;
@@ -487,6 +493,12 @@ async function cargarPedidos() {
 // ══════════════════════════════════════════════════════════════
 // BÚSQUEDA Y FILTROS
 // ══════════════════════════════════════════════════════════════
+let _searchTimer;
+function debouncedSearch(val) {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => onSearch(val), 120);
+}
+
 function onSearch(val) {
   const q = val.trim().toLowerCase();
   if (!q && !state.filtroEstado) {
@@ -752,6 +764,12 @@ function irA(nombre) {
   const btn = document.getElementById('nav-' + nombre);
   if (btn) btn.classList.add('active');
   if (nombre === 'todos') renderTodos();
+  // Cargar SheetJS solo cuando entra a Admin por primera vez
+  if (nombre === 'admin' && typeof XLSX === 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    document.head.appendChild(s);
+  }
 }
 
 function volverScreen() {
