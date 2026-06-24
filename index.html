@@ -350,7 +350,7 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
       <div class="admin-hints">
         <div class="hint-row"><i class="ti ti-refresh"></i><span><strong>Reemplazo total:</strong> elimina pedidos anteriores automáticamente</span></div>
         <div class="hint-row"><i class="ti ti-users"></i><span><strong>Actualización inmediata</strong> para todos los vendedores</span></div>
-        <div class="hint-row"><i class="ti ti-table"></i><span>Columnas requeridas: <strong>ID_Pedido, Codigo_Cliente, Nombre_Cliente, Repartidor_Asignado...</strong></span></div>
+        <div class="hint-row"><i class="ti ti-table"></i><span>Columnas requeridas: <strong>factu_nume, codigo, razon_social, transpor</strong></span></div>
       </div>
     </div>
   </div>
@@ -373,6 +373,25 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
 // CONFIGURACIÓN — REEMPLAZAR CON TU URL DE GAS
 // ══════════════════════════════════════════════════════════════
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw2LYYJ0btKKcf6hjMcQFDJ7yYMffePdUEtN4Z-H_ed0-iOzafVOaVWUDxS-tzugBkmxw/exec';
+
+// ── TABLA DE FLETEROS ────────────────────────────────────────
+const FLETEROS = {
+  '11': { nombre: 'MARTINEZ CRISTIAN',    tel: '3764389427' },
+  '12': { nombre: 'SILVA DIEGO',          tel: '3764389471' },
+  '16': { nombre: 'SUAREZ JULIAN',        tel: '3764389466' },
+  '20': { nombre: 'VALENZUELA FRANCISCO', tel: '3764921964' },
+  '21': { nombre: 'MAYOL MATIAS',         tel: '3764389458' },
+  '23': { nombre: 'SCHUBERT MARCELO',     tel: '3764297540' },
+  '24': { nombre: 'LACZESKI PABLO',       tel: '3765176820' },
+  '25': { nombre: 'SINFRON ANIBAL',       tel: '3764389429' },
+  '26': { nombre: 'MAYDANA GABRIEL',      tel: '3765176821' },
+  '42': { nombre: 'SOTO',                 tel: '3764389387' },
+  '43': { nombre: 'VALENZUELA BERNARDO',  tel: '3764389426' },
+  '51': { nombre: 'SANABRIA',             tel: '3764537880' },
+};
+function fletero(cod) {
+  return FLETEROS[String(cod).trim()] || { nombre: 'Sin asignar', tel: '' };
+}
 
 // ══════════════════════════════════════════════════════════════
 // ESTADO GLOBAL
@@ -470,7 +489,8 @@ function onSearch(val) {
     const matchQ = !q ||
       (p.Nombre_Cliente  || '').toLowerCase().includes(q) ||
       (p.Codigo_Cliente  || '').toLowerCase().includes(q) ||
-      (p.Repartidor_Asignado || '').toLowerCase().includes(q);
+      (p.Repartidor_Asignado || '').toLowerCase().includes(q) ||
+      (p.Hoja_Ruta || '').toLowerCase().includes(q);
     const matchE = !state.filtroEstado || (p.Estado_Pedido || '') === state.filtroEstado;
     return matchQ && matchE;
   });
@@ -531,7 +551,10 @@ function verDetalle(idPedido) {
   state.pedidoActivo = p;
   document.getElementById('d-nombre').textContent     = p.Nombre_Cliente || '—';
   document.getElementById('d-cod').textContent        = `Cód. ${p.Codigo_Cliente}`;
+  const telRep = p.Tel_Repartidor || '';
   document.getElementById('d-repartidor').textContent = p.Repartidor_Asignado || 'Sin asignar';
+  const repBtn = document.querySelector('.act-btn.primary');
+  if (repBtn) repBtn.title = telRep ? `Llamar: ${telRep}` : 'Sin teléfono';
   document.getElementById('d-id').textContent         = p.ID_Pedido || '—';
   document.getElementById('d-dir').textContent        = p.Direccion_Cliente || '—';
   document.getElementById('d-rubro').textContent      = p.Rubro_Negocio || '—';
@@ -555,7 +578,14 @@ async function cambiarEstado(nuevoEstado) {
 }
 
 function llamar(tipo) {
-  toast(`📞 Función de llamada — agregar teléfonos al Excel`);
+  if (!state.pedidoActivo) return;
+  if (tipo === 'repartidor') {
+    const tel = state.pedidoActivo.Tel_Repartidor;
+    if (tel) { window.location.href = `tel:+54${tel}`; }
+    else { toast('Sin teléfono registrado para este repartidor'); }
+  } else {
+    toast('📞 Teléfono del cliente no disponible en este archivo');
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -648,16 +678,21 @@ function procesarArchivo(file) {
       const ws   = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
       if (!rows.length) { mostrarUploadStatus('error','El archivo está vacío'); return; }
-      state.excelData = rows.map(r => ({
-        ID_Pedido:           String(r['ID_Pedido']          || r['id_pedido']           || ''),
-        Codigo_Cliente:      String(r['Codigo_Cliente']     || r['codigo_cliente']      || ''),
-        Nombre_Cliente:      String(r['Nombre_Cliente']     || r['nombre_cliente']      || ''),
-        Direccion_Cliente:   String(r['Direccion_Cliente']  || r['direccion_cliente']   || ''),
-        Rubro_Negocio:       String(r['Rubro_Negocio']      || r['rubro_negocio']       || ''),
-        Hoja_Ruta:           String(r['Hoja_Ruta']          || r['hoja_ruta']           || ''),
-        Repartidor_Asignado: String(r['Repartidor_Asignado']|| r['repartidor_asignado'] || ''),
-        Estado_Pedido:       String(r['Estado_Pedido']      || r['estado_pedido']       || 'En Viaje'),
-      }));
+      state.excelData = rows.map(r => {
+        const codFlete = String(r['transpor'] || r['Transpor'] || '').trim();
+        const f = fletero(codFlete);
+        return {
+          ID_Pedido:           String(r['factu_nume'] || r['ID_Pedido'] || ''),
+          Codigo_Cliente:      String(r['codigo']     || r['Codigo_Cliente'] || ''),
+          Nombre_Cliente:      String(r['razon_social']|| r['Nombre_Cliente'] || ''),
+          Direccion_Cliente:   String(r['direccion']  || r['Direccion_Cliente'] || ''),
+          Rubro_Negocio:       String(r['canal']      || r['Rubro_Negocio'] || ''),
+          Hoja_Ruta:           String(r['transpor']   || r['Hoja_Ruta'] || ''),
+          Repartidor_Asignado: f.nombre,
+          Tel_Repartidor:      f.tel,
+          Estado_Pedido:       'En Viaje',
+        };
+      });
       mostrarUploadStatus('success', `✓ ${rows.length} pedidos listos para subir`);
       document.getElementById('upload-btn').disabled = false;
     } catch(err) {
