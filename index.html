@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Preventa Diaria — Logicom</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+/* ── RESET & BASE ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -apple-system, 'Segoe UI', sans-serif; }
+
+/* ── CSS VARS ─────────────────────────────────────────────── */
+:root {
+  --navy:    #1a3a5c;
+  --navy2:   #0d2440;
+  --accent:  #2ecc8a;
+  --accent2: #27ae76;
+  --warn:    #e8a838;
+  --danger:  #e05252;
+  --text:    #f0f4f8;
+  --text2:   #8fa3b8;
+  --card:    #1c2b3a;
+  --card2:   #243447;
+  --border:  rgba(255,255,255,0.08);
+  --radius:  14px;
+  --radius-sm: 8px;
+}
+
+/* ── APP SHELL ────────────────────────────────────────────── */
+#app { display:flex; flex-direction:column; height:100vh; max-width:480px; margin:0 auto; position:relative; background:#0f1923; }
+
+/* ── SCREENS ──────────────────────────────────────────────── */
+.screen { display:none; flex:1; flex-direction:column; overflow:hidden; }
+.screen.active { display:flex; }
+
+/* ── TOPBAR ───────────────────────────────────────────────── */
+.topbar {
+  background: var(--navy);
+  padding: 14px 16px 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.topbar-row { display:flex; align-items:center; gap:10px; }
+.topbar h1 { font-size:17px; font-weight:600; color:var(--text); flex:1; }
+.topbar p  { font-size:12px; color:var(--text2); margin-top:2px; }
+.back-btn  { background:rgba(255,255,255,.12); border:none; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; color:var(--text); cursor:pointer; flex-shrink:0; }
+.back-btn i { font-size:20px; }
+
+/* ── USER CHIP ────────────────────────────────────────────── */
+.user-chip { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.1); border-radius:20px; padding:4px 10px 4px 6px; cursor:pointer; }
+.user-chip .avatar { width:24px; height:24px; border-radius:50%; background:var(--accent2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; }
+.user-chip span { font-size:12px; color:var(--text); }
+
+/* ── SCROLLABLE CONTENT ───────────────────────────────────── */
+.scroll-area { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 80px; }
+
+/* ── NAV BAR ──────────────────────────────────────────────── */
+.navbar {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  background:var(--navy2); border-top:1px solid var(--border);
+  position:absolute; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn { display:flex; flex-direction:column; align-items:center; padding:9px 4px 7px; border:none; background:transparent; color:var(--text2); font-size:10px; gap:2px; cursor:pointer; transition:color .15s; }
+.nav-btn i { font-size:22px; }
+.nav-btn.active { color:var(--accent); }
+
+/* ── SEARCH BAR ───────────────────────────────────────────── */
+.search-wrap { padding:12px 14px 8px; flex-shrink:0; }
+.search-box  { display:flex; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; gap:10px; }
+.search-box i { font-size:20px; color:var(--text2); }
+.search-box input { background:transparent; border:none; outline:none; color:var(--text); font-size:15px; width:100%; }
+.search-box input::placeholder { color:var(--text2); }
+
+/* ── FILTER CHIPS ─────────────────────────────────────────── */
+.chips { display:flex; gap:6px; padding:0 14px 10px; flex-shrink:0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.chips::-webkit-scrollbar { display:none; }
+.chip { flex-shrink:0; padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--card); color:var(--text2); font-size:12px; cursor:pointer; white-space:nowrap; }
+.chip.active { background:var(--accent2); border-color:var(--accent2); color:#fff; font-weight:600; }
+
+/* ── CARDS ────────────────────────────────────────────────── */
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:13px 14px; margin-bottom:10px; cursor:pointer; transition:border-color .15s; }
+.card:hover, .card:active { border-color:rgba(46,204,138,.4); }
+.card-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; gap:8px; }
+.client-name { font-size:15px; font-weight:600; color:var(--text); flex:1; line-height:1.3; }
+.badge { font-size:11px; padding:3px 9px; border-radius:20px; white-space:nowrap; font-weight:500; flex-shrink:0; }
+.badge.viaje  { background:rgba(46,204,138,.15); color:var(--accent); }
+.badge.entregado { background:rgba(46,204,138,.3); color:#1eaa6a; }
+.badge.pendiente { background:rgba(232,168,56,.15); color:var(--warn); }
+.card-addr { font-size:12px; color:var(--text2); margin-bottom:10px; display:flex; align-items:center; gap:4px; }
+.card-addr i { font-size:14px; flex-shrink:0; }
+
+.repartidor-pill {
+  display:flex; align-items:center; gap:8px;
+  background:var(--navy); border-radius:var(--radius-sm);
+  padding:8px 11px;
+}
+.repartidor-pill i { font-size:18px; color:var(--accent); flex-shrink:0; }
+.repartidor-pill .label { font-size:10px; color:var(--text2); display:block; text-transform:uppercase; letter-spacing:.5px; }
+.repartidor-pill .name  { font-size:13px; font-weight:600; color:var(--text); }
+
+.cod-tag { font-size:11px; color:var(--text2); margin-top:7px; display:flex; align-items:center; gap:4px; }
+.cod-tag i { font-size:13px; }
+
+/* ── EMPTY STATE ──────────────────────────────────────────── */
+.empty { text-align:center; padding:3rem 1rem; color:var(--text2); }
+.empty i { font-size:48px; margin-bottom:10px; display:block; opacity:.5; }
+.empty p { font-size:14px; line-height:1.6; }
+
+/* ── DETAIL SCREEN ────────────────────────────────────────── */
+.hero-box {
+  background:linear-gradient(135deg,var(--navy) 0%,#1d4a73 100%);
+  border:1px solid rgba(46,204,138,.3);
+  border-radius:var(--radius); padding:14px 16px; margin-bottom:12px;
+}
+.hero-label { font-size:11px; color:var(--accent); text-transform:uppercase; letter-spacing:.6px; font-weight:600; display:flex; align-items:center; gap:5px; }
+.hero-label i { font-size:15px; }
+.hero-value { font-size:22px; font-weight:700; color:var(--text); margin-top:4px; }
+
+.info-grid { display:flex; flex-direction:column; gap:7px; margin-bottom:14px; }
+.info-row { display:flex; align-items:center; justify-content:space-between; background:var(--card); border-radius:var(--radius-sm); padding:10px 12px; }
+.info-row .ik { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text2); }
+.info-row .ik i { font-size:16px; }
+.info-row .iv { font-size:13px; font-weight:500; color:var(--text); text-align:right; max-width:55%; }
+
+.estado-select { background:transparent; border:none; outline:none; color:var(--text); font-size:13px; font-weight:500; cursor:pointer; text-align:right; }
+.estado-select option { background:#1c2b3a; }
+
+.action-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+.act-btn { display:flex; align-items:center; justify-content:center; gap:7px; padding:11px; border-radius:var(--radius-sm); border:1px solid var(--border); font-size:13px; font-weight:500; cursor:pointer; color:var(--text); background:var(--card); }
+.act-btn.primary { background:var(--navy); border-color:var(--accent2); color:var(--accent); }
+.act-btn i { font-size:18px; }
+
+/* ── COMENTARIOS ──────────────────────────────────────────── */
+.comments-section { margin-top:2px; }
+.comments-title { font-size:13px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.comments-title i { font-size:16px; }
+
+.comment-item { background:var(--card); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:7px; }
+.comment-meta { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+.comment-avatar { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+.comment-autor { font-size:12px; font-weight:600; color:var(--text); }
+.comment-rol { font-size:10px; color:var(--text2); }
+.comment-ts { font-size:10px; color:var(--text2); margin-left:auto; }
+.comment-text { font-size:13px; color:var(--text); line-height:1.5; }
+
+.comment-form { display:flex; gap:8px; align-items:flex-end; margin-top:10px; }
+.comment-input { flex:1; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 12px; color:var(--text); font-size:14px; resize:none; outline:none; font-family:inherit; min-height:40px; max-height:90px; }
+.comment-input:focus { border-color:rgba(46,204,138,.4); }
+.comment-send { background:var(--accent2); border:none; border-radius:var(--radius-sm); width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; flex-shrink:0; }
+.comment-send i { font-size:20px; }
+
+/* ── LOGIN SCREEN ─────────────────────────────────────────── */
+#screen-login { background:var(--navy2); justify-content:center; align-items:center; }
+.login-box { width:100%; max-width:340px; padding:0 24px; }
+.login-logo { text-align:center; margin-bottom:28px; }
+.login-logo i { font-size:52px; color:var(--accent); }
+.login-logo h1 { font-size:22px; font-weight:700; color:var(--text); margin-top:8px; }
+.login-logo p  { font-size:13px; color:var(--text2); margin-top:4px; }
+.login-field { margin-bottom:14px; }
+.login-field label { display:block; font-size:12px; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+.login-field input {
+  width:100%; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:12px 14px; color:var(--text);
+  font-size:16px; outline:none; font-family:inherit; letter-spacing:.5px;
+}
+.login-field input:focus { border-color:var(--accent2); }
+.login-btn {
+  width:100%; background:var(--accent2); border:none; border-radius:var(--radius-sm);
+  padding:14px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; margin-top:8px;
+}
+.login-error { font-size:13px; color:var(--danger); text-align:center; margin-top:10px; min-height:18px; }
+
+/* ── ADMIN SCREEN ─────────────────────────────────────────── */
+.upload-zone {
+  border:2px dashed rgba(46,204,138,.3); border-radius:var(--radius); padding:28px 16px;
+  text-align:center; cursor:pointer; background:var(--card); margin-bottom:12px;
+  transition:border-color .2s;
+}
+.upload-zone:hover, .upload-zone.drag { border-color:var(--accent); }
+.upload-zone i { font-size:44px; color:var(--accent); display:block; margin-bottom:8px; }
+.upload-zone p { font-size:14px; color:var(--text2); line-height:1.6; }
+.upload-zone strong { color:var(--accent); font-size:13px; display:block; margin-top:4px; }
+.upload-btn { width:100%; background:var(--navy); border:1px solid var(--accent2); border-radius:var(--radius-sm); padding:13px; color:var(--accent); font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
+.upload-btn i { font-size:20px; }
+.upload-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+.status-bar-msg { border-radius:var(--radius-sm); padding:10px 13px; font-size:13px; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.status-bar-msg.success { background:rgba(46,204,138,.12); border:1px solid rgba(46,204,138,.3); color:var(--accent); }
+.status-bar-msg.error   { background:rgba(224,82,82,.12);  border:1px solid rgba(224,82,82,.3);  color:var(--danger); }
+.status-bar-msg i { font-size:18px; flex-shrink:0; }
+
+.admin-hints { display:flex; flex-direction:column; gap:7px; margin-top:14px; }
+.hint-row { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--text2); padding:9px 12px; background:var(--card); border-radius:var(--radius-sm); }
+.hint-row i { font-size:16px; color:var(--accent); flex-shrink:0; }
+.hint-row strong { color:var(--text); }
+
+/* ── SPINNER ──────────────────────────────────────────────── */
+.spinner { width:20px; height:20px; border:2px solid rgba(46,204,138,.3); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── LOADING OVERLAY ──────────────────────────────────────── */
+#loading { position:fixed; inset:0; background:rgba(15,25,35,.85); display:none; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:12px; }
+#loading.show { display:flex; }
+#loading p { color:var(--text2); font-size:14px; }
+
+/* ── TOAST ────────────────────────────────────────────────── */
+#toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--navy); border:1px solid var(--accent2); color:var(--text); padding:10px 18px; border-radius:var(--radius-sm); font-size:13px; opacity:0; transition:all .25s; z-index:1000; white-space:nowrap; pointer-events:none; }
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════ LOGIN ══════════ -->
+  <div class="screen active" id="screen-login">
+    <div class="login-box">
+      <div class="login-logo">
+        <i class="ti ti-truck-delivery"></i>
+        <h1>Preventa Diaria</h1>
+        <p>Logicom S.R.L. — Posadas</p>
+      </div>
+      <div class="login-field">
+        <label>Tu nombre</label>
+        <input type="text" id="login-nombre" placeholder="Ej: Selenia" autocomplete="off">
+      </div>
+      <div class="login-field">
+        <label>PIN</label>
+        <input type="password" id="login-pin" placeholder="••••" maxlength="6" inputmode="numeric">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Ingresar</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ BUSCAR ══════════ -->
+  <div class="screen" id="screen-buscar">
+    <div class="topbar">
+      <div class="topbar-row">
+        <div style="flex:1">
+          <h1>Preventa del Día</h1>
+          <p id="fecha-label">Cargando...</p>
+        </div>
+        <div class="user-chip" onclick="logout()">
+          <div class="avatar" id="user-avatar">?</div>
+          <span id="user-nombre">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <i class="ti ti-search"></i>
+        <input type="text" id="search-input" placeholder="Nombre o código de cliente..." oninput="onSearch(this.value)" autocomplete="off">
+      </div>
+    </div>
+    <div class="chips" id="chips">
+      <div class="chip active" onclick="setFiltro('')">Todos</div>
+      <div class="chip" onclick="setFiltro('En Viaje')">En Viaje</div>
+      <div class="chip" onclick="setFiltro('Pendiente')">Pendiente</div>
+      <div class="chip" onclick="setFiltro('Entregado')">Entregado</div>
+    </div>
+    <div class="scroll-area" id="results-area">
+      <div class="empty"><i class="ti ti-search"></i><p>Buscá por nombre<br>o código de cliente</p></div>
+    </div>
+  </div>
+
+  <!-- ══════════ TODOS ══════════ -->
+  <div class="screen" id="screen-todos">
+    <div class="topbar">
+      <h1>Todos los pedidos</h1>
+      <p id="todos-count">— pedidos hoy</p>
+    </div>
+    <div class="scroll-area" id="todos-area"></div>
+  </div>
+
+  <!-- ══════════ DETALLE ══════════ -->
+  <div class="screen" id="screen-detalle">
+    <div class="topbar">
+      <div class="topbar-row">
+        <button class="back-btn" onclick="volverScreen()" aria-label="Volver">
+          <i class="ti ti-arrow-left"></i>
+        </button>
+        <div style="flex:1">
+          <h1 id="d-nombre">—</h1>
+          <p id="d-cod">Cód. —</p>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div class="hero-box">
+        <div class="hero-label"><i class="ti ti-truck"></i>Repartidor asignado</div>
+        <div class="hero-value" id="d-repartidor">—</div>
+      </div>
+      <div class="info-grid">
+        <div class="info-row"><div class="ik"><i class="ti ti-file-text"></i>Nro. pedido</div><div class="iv" id="d-id">—</div></div>
+        <div class="info-row"><div class="ik"><i class="ti ti-map-pin"></i>Dirección</div><div class="iv" id="d-dir">—</div></div>
+        <div class="info-row"><div class="ik"><i class="ti ti-tag"></i>Rubro</div><div class="iv" id="d-rubro">—</div></div>
+        <div class="info-row"><div class="ik"><i class="ti ti-route"></i>Hoja de ruta</div><div class="iv" id="d-hoja">—</div></div>
+        <div class="info-row">
+          <div class="ik"><i class="ti ti-circle-check"></i>Estado</div>
+          <select class="estado-select" id="d-estado" onchange="cambiarEstado(this.value)">
+            <option>En Viaje</option>
+            <option>Entregado</option>
+            <option>Pendiente</option>
+            <option>Reprogramado</option>
+          </select>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="act-btn" onclick="llamar('cliente')"><i class="ti ti-phone"></i>Llamar cliente</button>
+        <button class="act-btn primary" onclick="llamar('repartidor')"><i class="ti ti-truck"></i>Llamar flete</button>
+      </div>
+      <div class="comments-section">
+        <div class="comments-title"><i class="ti ti-message-circle"></i>Comentarios del pedido</div>
+        <div id="comments-list"></div>
+        <div class="comment-form">
+          <textarea class="comment-input" id="comment-input" placeholder="Escribí un comentario..." rows="1" oninput="autoResize(this)"></textarea>
+          <button class="comment-send" onclick="enviarComentario()" aria-label="Enviar"><i class="ti ti-send"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ADMIN ══════════ -->
+  <div class="screen" id="screen-admin">
+    <div class="topbar">
+      <h1>Subir Preventa</h1>
+      <p>Reemplaza todos los pedidos del día</p>
+    </div>
+    <div class="scroll-area">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="onDrop(event)">
+        <i class="ti ti-file-spreadsheet"></i>
+        <p>Tocá para seleccionar el Excel<br>o arrastrá el archivo acá</p>
+        <strong id="file-name">Preventa_DD-MM-YYYY.xlsx</strong>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="onFileSelect(this)">
+      <button class="upload-btn" id="upload-btn" onclick="subirExcel()" disabled>
+        <i class="ti ti-upload"></i>
+        <span>Subir preventa del día</span>
+      </button>
+      <div id="upload-status"></div>
+      <div class="admin-hints">
+        <div class="hint-row"><i class="ti ti-refresh"></i><span><strong>Reemplazo total:</strong> elimina pedidos anteriores automáticamente</span></div>
+        <div class="hint-row"><i class="ti ti-users"></i><span><strong>Actualización inmediata</strong> para todos los vendedores</span></div>
+        <div class="hint-row"><i class="ti ti-table"></i><span>Columnas requeridas: <strong>ID_Pedido, Codigo_Cliente, Nombre_Cliente, Repartidor_Asignado...</strong></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ NAVBAR ══════════ -->
+  <nav class="navbar" id="main-nav" style="display:none">
+    <button class="nav-btn active" id="nav-buscar" onclick="irA('buscar')"><i class="ti ti-search"></i>Buscar</button>
+    <button class="nav-btn"        id="nav-todos"  onclick="irA('todos')"><i class="ti ti-list"></i>Todos</button>
+    <button class="nav-btn"        id="nav-admin"  onclick="irA('admin')" id="nav-admin-btn"><i class="ti ti-upload"></i>Admin</button>
+  </nav>
+</div>
+
+<!-- LOADING -->
+<div id="loading"><div class="spinner"></div><p id="loading-msg">Cargando...</p></div>
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIGURACIÓN — REEMPLAZAR CON TU URL DE GAS
+// ══════════════════════════════════════════════════════════════
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw2LYYJ0btKKcf6hjMcQFDJ7yYMffePdUEtN4Z-H_ed0-iOzafVOaVWUDxS-tzugBkmxw/exec';
+
+// ══════════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════════════════════════
+let state = {
+  user: null,          // { nombre, rol }
+  pedidos: [],         // todos los pedidos del día
+  fechaCarga: '',
+  filtroEstado: '',
+  pedidoActivo: null,
+  screenAnterior: 'buscar',
+  excelData: null,     // pedidos parseados del Excel listo para subir
+};
+
+// ══════════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════════
+async function doLogin() {
+  const nombre = document.getElementById('login-nombre').value.trim();
+  const pin    = document.getElementById('login-pin').value.trim();
+  if (!nombre || !pin) { setLoginError('Completá tu nombre y PIN'); return; }
+
+  showLoading('Verificando...');
+  try {
+    const res = await gasGet({ action:'login', nombre, pin });
+    if (res.error) { setLoginError('Usuario o PIN incorrecto'); return; }
+    state.user = { nombre: res.nombre, rol: res.rol };
+    document.getElementById('user-nombre').textContent = res.nombre;
+    document.getElementById('user-avatar').textContent = res.nombre.charAt(0).toUpperCase();
+    document.getElementById('main-nav').style.display = '';
+
+    // Ocultar Admin si no es logística/admin
+    const adminBtn = document.getElementById('nav-admin');
+    if (!['admin','logistica'].includes(res.rol)) adminBtn.style.display = 'none';
+
+    mostrarScreen('buscar');
+    cargarPedidos();
+  } catch(e) {
+    setLoginError('Error de conexión. Verificá internet.');
+  } finally {
+    hideLoading();
+  }
+}
+
+function setLoginError(msg) { document.getElementById('login-error').textContent = msg; hideLoading(); }
+
+function logout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  state.user = null;
+  state.pedidos = [];
+  document.getElementById('login-nombre').value = '';
+  document.getElementById('login-pin').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('main-nav').style.display = 'none';
+  mostrarScreen('login');
+}
+
+// ── Enter en PIN ──
+document.getElementById('login-pin').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// ══════════════════════════════════════════════════════════════
+// CARGAR PEDIDOS DESDE GAS
+// ══════════════════════════════════════════════════════════════
+async function cargarPedidos() {
+  showLoading('Cargando pedidos...');
+  try {
+    const res = await gasGet({ action: 'getPedidos' });
+    state.pedidos   = res.pedidos || [];
+    state.fechaCarga = res.fecha  || new Date().toLocaleDateString('es-AR');
+    document.getElementById('fecha-label').textContent =
+      `${state.pedidos.length} pedidos — ${state.fechaCarga}`;
+    document.getElementById('todos-count').textContent =
+      `${state.pedidos.length} pedidos hoy`;
+    renderResults(state.pedidos);
+    renderTodos();
+  } catch(e) {
+    toast('Error al cargar pedidos');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// BÚSQUEDA Y FILTROS
+// ══════════════════════════════════════════════════════════════
+function onSearch(val) {
+  const q = val.trim().toLowerCase();
+  if (!q && !state.filtroEstado) {
+    renderResults([]);
+    document.getElementById('results-area').innerHTML =
+      '<div class="empty"><i class="ti ti-search"></i><p>Buscá por nombre<br>o código de cliente</p></div>';
+    return;
+  }
+  const filtrados = state.pedidos.filter(p => {
+    const matchQ = !q ||
+      (p.Nombre_Cliente  || '').toLowerCase().includes(q) ||
+      (p.Codigo_Cliente  || '').toLowerCase().includes(q) ||
+      (p.Repartidor_Asignado || '').toLowerCase().includes(q);
+    const matchE = !state.filtroEstado || (p.Estado_Pedido || '') === state.filtroEstado;
+    return matchQ && matchE;
+  });
+  renderResults(filtrados);
+}
+
+function setFiltro(estado) {
+  state.filtroEstado = estado;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  onSearch(document.getElementById('search-input').value);
+}
+
+function renderResults(lista) {
+  const area = document.getElementById('results-area');
+  if (!lista.length) {
+    area.innerHTML = '<div class="empty"><i class="ti ti-search-off"></i><p>No se encontraron pedidos<br>con esa búsqueda</p></div>';
+    return;
+  }
+  area.innerHTML = lista.map(pedidoCard).join('');
+}
+
+function renderTodos() {
+  const area = document.getElementById('todos-area');
+  if (!state.pedidos.length) {
+    area.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i><p>No hay pedidos cargados hoy</p></div>';
+    return;
+  }
+  area.innerHTML = state.pedidos.map(pedidoCard).join('');
+}
+
+function pedidoCard(p) {
+  const estado = p.Estado_Pedido || 'En Viaje';
+  const cls = estado==='Entregado' ? 'entregado' : estado==='Pendiente' ? 'pendiente' : 'viaje';
+  return `<div class="card" onclick="verDetalle('${esc(p.ID_Pedido)}')">
+    <div class="card-head">
+      <div class="client-name">${esc(p.Nombre_Cliente)}</div>
+      <span class="badge ${cls}">${estado}</span>
+    </div>
+    <div class="card-addr"><i class="ti ti-map-pin"></i>${esc(p.Direccion_Cliente||'—')}</div>
+    <div class="repartidor-pill">
+      <i class="ti ti-truck"></i>
+      <div>
+        <span class="label">Repartidor asignado</span>
+        <span class="name">${esc(p.Repartidor_Asignado||'Sin asignar')}</span>
+      </div>
+    </div>
+    <div class="cod-tag"><i class="ti ti-hash"></i>Cód. ${esc(p.Codigo_Cliente)} · ${esc(p.Hoja_Ruta||'')}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DETALLE
+// ══════════════════════════════════════════════════════════════
+function verDetalle(idPedido) {
+  const p = state.pedidos.find(x => String(x.ID_Pedido) === String(idPedido));
+  if (!p) return;
+  state.pedidoActivo = p;
+  document.getElementById('d-nombre').textContent     = p.Nombre_Cliente || '—';
+  document.getElementById('d-cod').textContent        = `Cód. ${p.Codigo_Cliente}`;
+  document.getElementById('d-repartidor').textContent = p.Repartidor_Asignado || 'Sin asignar';
+  document.getElementById('d-id').textContent         = p.ID_Pedido || '—';
+  document.getElementById('d-dir').textContent        = p.Direccion_Cliente || '—';
+  document.getElementById('d-rubro').textContent      = p.Rubro_Negocio || '—';
+  document.getElementById('d-hoja').textContent       = p.Hoja_Ruta || '—';
+  document.getElementById('d-estado').value           = p.Estado_Pedido || 'En Viaje';
+  document.getElementById('comments-list').innerHTML  = '';
+  document.getElementById('comment-input').value      = '';
+  mostrarScreen('detalle');
+  cargarComentarios(idPedido);
+}
+
+async function cambiarEstado(nuevoEstado) {
+  if (!state.pedidoActivo) return;
+  try {
+    await gasPost({ action:'updateEstado', id_pedido: state.pedidoActivo.ID_Pedido, estado: nuevoEstado });
+    state.pedidoActivo.Estado_Pedido = nuevoEstado;
+    const p = state.pedidos.find(x => String(x.ID_Pedido) === String(state.pedidoActivo.ID_Pedido));
+    if (p) p.Estado_Pedido = nuevoEstado;
+    toast('Estado actualizado');
+  } catch(e) { toast('Error al actualizar estado'); }
+}
+
+function llamar(tipo) {
+  toast(`📞 Función de llamada — agregar teléfonos al Excel`);
+}
+
+// ══════════════════════════════════════════════════════════════
+// COMENTARIOS
+// ══════════════════════════════════════════════════════════════
+async function cargarComentarios(idPedido) {
+  try {
+    const res = await gasGet({ action:'getComentarios', id_pedido: idPedido });
+    renderComentarios(res.comentarios || []);
+  } catch(e) { /* silencioso */ }
+}
+
+function renderComentarios(lista) {
+  const el = document.getElementById('comments-list');
+  if (!lista.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text2);text-align:center;padding:14px 0">Sin comentarios aún</div>';
+    return;
+  }
+  el.innerHTML = lista.map(c => {
+    const color = rolColor(c.rol);
+    const ini   = (c.autor||'?').charAt(0).toUpperCase();
+    return `<div class="comment-item">
+      <div class="comment-meta">
+        <div class="comment-avatar" style="background:${color}20;color:${color}">${ini}</div>
+        <div>
+          <div class="comment-autor">${esc(c.autor)}</div>
+          <div class="comment-rol">${rolLabel(c.rol)}</div>
+        </div>
+        <div class="comment-ts">${esc(c.timestamp)}</div>
+      </div>
+      <div class="comment-text">${esc(c.texto)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function enviarComentario() {
+  const input = document.getElementById('comment-input');
+  const texto = input.value.trim();
+  if (!texto || !state.pedidoActivo || !state.user) return;
+  input.value = '';
+  autoResize(input);
+  try {
+    await gasPost({
+      action: 'addComentario',
+      id_pedido: state.pedidoActivo.ID_Pedido,
+      autor: state.user.nombre,
+      rol:   state.user.rol,
+      texto
+    });
+    cargarComentarios(state.pedidoActivo.ID_Pedido);
+  } catch(e) { toast('Error al enviar comentario'); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+
+function rolColor(rol) {
+  if (rol==='admin') return '#e05252';
+  if (rol==='logistica') return '#e8a838';
+  return '#2ecc8a';
+}
+function rolLabel(rol) {
+  if (rol==='admin') return 'Administrador';
+  if (rol==='logistica') return 'Logística';
+  return 'Vendedor';
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN — UPLOAD EXCEL
+// ══════════════════════════════════════════════════════════════
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) procesarArchivo(file);
+}
+
+function onFileSelect(input) {
+  if (input.files[0]) procesarArchivo(input.files[0]);
+}
+
+function procesarArchivo(file) {
+  document.getElementById('file-name').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb   = XLSX.read(e.target.result, { type:'array' });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
+      if (!rows.length) { mostrarUploadStatus('error','El archivo está vacío'); return; }
+      state.excelData = rows.map(r => ({
+        ID_Pedido:           String(r['ID_Pedido']          || r['id_pedido']           || ''),
+        Codigo_Cliente:      String(r['Codigo_Cliente']     || r['codigo_cliente']      || ''),
+        Nombre_Cliente:      String(r['Nombre_Cliente']     || r['nombre_cliente']      || ''),
+        Direccion_Cliente:   String(r['Direccion_Cliente']  || r['direccion_cliente']   || ''),
+        Rubro_Negocio:       String(r['Rubro_Negocio']      || r['rubro_negocio']       || ''),
+        Hoja_Ruta:           String(r['Hoja_Ruta']          || r['hoja_ruta']           || ''),
+        Repartidor_Asignado: String(r['Repartidor_Asignado']|| r['repartidor_asignado'] || ''),
+        Estado_Pedido:       String(r['Estado_Pedido']      || r['estado_pedido']       || 'En Viaje'),
+      }));
+      mostrarUploadStatus('success', `✓ ${rows.length} pedidos listos para subir`);
+      document.getElementById('upload-btn').disabled = false;
+    } catch(err) {
+      mostrarUploadStatus('error', 'Error al leer el archivo. Verificá que sea un Excel válido.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function subirExcel() {
+  if (!state.excelData) return;
+  showLoading('Subiendo pedidos...');
+  try {
+    const res = await gasPost({ action:'subirPedidos', pedidos: state.excelData });
+    if (res.error) throw new Error(res.error);
+    mostrarUploadStatus('success', `✓ ${res.total} pedidos cargados exitosamente`);
+    toast('Preventa subida correctamente');
+    state.excelData = null;
+    document.getElementById('upload-btn').disabled = true;
+    document.getElementById('file-name').textContent = 'Preventa_DD-MM-YYYY.xlsx';
+    document.getElementById('file-input').value = '';
+    await cargarPedidos();
+  } catch(e) {
+    mostrarUploadStatus('error', 'Error al subir. Intentá de nuevo.');
+  } finally {
+    hideLoading();
+  }
+}
+
+function mostrarUploadStatus(tipo, msg) {
+  const el = document.getElementById('upload-status');
+  el.innerHTML = `<div class="status-bar-msg ${tipo}"><i class="ti ti-${tipo==='success'?'circle-check':'alert-circle'}"></i><span>${msg}</span></div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════════════════════
+function mostrarScreen(nombre) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + nombre).classList.add('active');
+}
+
+function irA(nombre) {
+  if (nombre !== 'detalle') state.screenAnterior = nombre;
+  mostrarScreen(nombre);
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('nav-' + nombre);
+  if (btn) btn.classList.add('active');
+  if (nombre === 'todos') renderTodos();
+}
+
+function volverScreen() {
+  irA(state.screenAnterior);
+}
+
+// ══════════════════════════════════════════════════════════════
+// API HELPERS
+// ══════════════════════════════════════════════════════════════
+async function gasGet(params) {
+  const qs  = new URLSearchParams(params).toString();
+  const res = await fetch(`${GAS_URL}?${qs}`);
+  return res.json();
+}
+
+async function gasPost(body) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg||'Cargando...';
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
