@@ -459,7 +459,17 @@ async function cargarPedidos() {
   showLoading('Cargando pedidos...');
   try {
     const res = await gasGet({ action: 'getPedidos' });
-    state.pedidos   = res.pedidos || [];
+    state.pedidos = (res.pedidos || []).map(p => ({
+      ID_Pedido:           String(p.ID_Pedido           || ''),
+      Codigo_Cliente:      String(p.Codigo_Cliente      || ''),
+      Nombre_Cliente:      String(p.Nombre_Cliente      || ''),
+      Direccion_Cliente:   String(p.Direccion_Cliente   || ''),
+      Rubro_Negocio:       String(p.Rubro_Negocio       || ''),
+      Hoja_Ruta:           String(p.Hoja_Ruta           || ''),
+      Repartidor_Asignado: String(p.Repartidor_Asignado || ''),
+      Tel_Repartidor:      String(p.Tel_Repartidor      || ''),
+      Estado_Pedido:       String(p.Estado_Pedido       || 'En Viaje'),
+    }));
     state.fechaCarga = res.fecha  || new Date().toLocaleDateString('es-AR');
     document.getElementById('fecha-label').textContent =
       `${state.pedidos.length} pedidos — ${state.fechaCarga}`;
