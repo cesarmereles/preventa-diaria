@@ -470,8 +470,16 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
   <!-- ══════════ REPOSITOR ══════════ -->
   <div class="screen" id="screen-repositor">
     <div class="repo-topbar">
-      <h1 id="repo-titulo">Mis visitas del día</h1>
-      <p id="repo-subtitulo">Cargando...</p>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h1 id="repo-titulo">Mis visitas del día</h1>
+          <p id="repo-subtitulo">Cargando...</p>
+        </div>
+        <div class="user-chip" onclick="logout()" title="Cerrar sesión">
+          <div class="avatar" id="repo-avatar">?</div>
+          <span style="font-size:11px;color:#C0DD97">Salir</span>
+        </div>
+      </div>
     </div>
     <div class="repo-stats">
       <div class="repo-stat"><div class="repo-stat-n" id="rs-total">0</div><div class="repo-stat-l">clientes hoy</div></div>
@@ -571,6 +579,7 @@ async function doLogin() {
     state.user = { nombre: res.nombre, rol: res.rol };
     document.getElementById('user-nombre').textContent = res.nombre;
     document.getElementById('user-avatar').textContent = res.nombre.charAt(0).toUpperCase();
+    document.getElementById('repo-avatar').textContent = res.nombre.charAt(0).toUpperCase();
     document.getElementById('main-nav').style.display = '';
 
     // Mostrar/ocultar botones según rol
