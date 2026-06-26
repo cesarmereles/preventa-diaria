@@ -352,6 +352,34 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
         <div class="hint-row"><i class="ti ti-users"></i><span><strong>Actualización inmediata</strong> para todos los vendedores</span></div>
         <div class="hint-row"><i class="ti ti-table"></i><span>Columnas requeridas: <strong>factu_nume, codigo, razon_social, transpor</strong></span></div>
       </div>
+
+      <!-- MAESTRO REPOSITORES -->
+      <div style="border-top:1px solid var(--border);margin:16px 0"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-users" style="font-size:16px;color:#9F8FEF"></i>
+        Maestro de Repositores
+      </div>
+      <div class="upload-zone" id="upload-zone-repo"
+           onclick="document.getElementById('file-input-repo').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="onDropRepo(event)"
+           style="border-color:rgba(159,143,239,.35)">
+        <i class="ti ti-file-spreadsheet" style="color:#9F8FEF"></i>
+        <p>Tocá para seleccionar el Excel</p>
+        <strong id="file-name-repo" style="color:#9F8FEF">MAESTRO-REPOSITORES.xlsx</strong>
+      </div>
+      <input type="file" id="file-input-repo" accept=".xlsx,.xls,.csv" style="display:none" onchange="onFileSelectRepo(this)">
+      <button class="upload-btn" id="upload-btn-repo" onclick="subirMaestroRepositores()" disabled
+              style="background:#2D2460;border-color:#9F8FEF;color:#C4BAF5;margin-bottom:10px">
+        <i class="ti ti-upload"></i>
+        <span>Subir Maestro de Repositores</span>
+      </button>
+      <div id="upload-status-repo"></div>
+      <div class="admin-hints">
+        <div class="hint-row"><i class="ti ti-refresh" style="color:#9F8FEF"></i><span><strong>Reemplazo total:</strong> actualiza la hoja de ruta de repositores</span></div>
+        <div class="hint-row"><i class="ti ti-table" style="color:#9F8FEF"></i><span>Columnas: <strong>IDREPOSITOR, REPOSITOR, CODCLI, RAZON SOCIAL, DIA-VISITA</strong></span></div>
+      </div>
     </div>
   </div>
 
