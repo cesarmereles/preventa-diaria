@@ -200,6 +200,61 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
 .hint-row i { font-size:16px; color:var(--accent); flex-shrink:0; }
 .hint-row strong { color:var(--text); }
 
+/* ── REPOSITOR SCREEN ────────────────────────────────────── */
+.repo-topbar { background: linear-gradient(135deg, #1e4d1e 0%, #27500A 100%); padding: 12px 14px 10px; flex-shrink:0; }
+.repo-topbar h1 { font-size:16px; font-weight:600; color:#fff; }
+.repo-topbar p  { font-size:11px; color:#C0DD97; margin-top:2px; }
+
+.repo-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:10px 14px; flex-shrink:0; background:var(--navy2); border-bottom:1px solid var(--border); }
+.repo-stat { background:var(--card); border-radius:var(--radius-sm); padding:8px 6px; text-align:center; }
+.repo-stat-n { font-size:20px; font-weight:600; color:var(--text); }
+.repo-stat-n.verde { color:#3B6D11; }
+.repo-stat-n.naranja { color:var(--warn); }
+.repo-stat-l { font-size:10px; color:var(--text2); margin-top:2px; line-height:1.3; }
+
+.repo-chips { display:flex; gap:6px; padding:8px 14px; flex-shrink:0; overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--border); }
+.repo-chips::-webkit-scrollbar { display:none; }
+.repo-chip { flex-shrink:0; padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--card); color:var(--text2); font-size:12px; cursor:pointer; }
+.repo-chip.active { background:#27500A; border-color:#3B6D11; color:#C0DD97; font-weight:600; }
+
+.repo-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 13px; margin-bottom:9px; }
+.repo-card-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; gap:8px; }
+.repo-card-name { font-size:14px; font-weight:600; color:var(--text); flex:1; line-height:1.3; }
+.repo-badge { font-size:10px; padding:3px 8px; border-radius:20px; white-space:nowrap; font-weight:500; flex-shrink:0; }
+.repo-badge.con-pedido { background:rgba(59,109,17,.2); color:#7BC644; border:1px solid rgba(59,109,17,.3); }
+.repo-badge.sin-pedido { background:rgba(232,168,56,.15); color:var(--warn); border:1px solid rgba(232,168,56,.2); }
+.repo-badge.en-visita  { background:rgba(24,95,165,.2); color:#5BA3E8; border:1px solid rgba(24,95,165,.3); }
+.repo-badge.repuesto   { background:rgba(46,204,138,.15); color:var(--accent); border:1px solid rgba(46,204,138,.25); }
+
+.repo-pedido-pill { display:flex; align-items:center; gap:7px; background:var(--navy); border-radius:var(--radius-sm); padding:7px 10px; margin-bottom:9px; }
+.repo-pedido-pill i { font-size:16px; color:var(--accent); flex-shrink:0; }
+.repo-pedido-pill .rp-label { font-size:10px; color:var(--text2); display:block; }
+.repo-pedido-pill .rp-val   { font-size:12px; font-weight:600; color:var(--text); }
+
+.repo-no-pedido { display:flex; align-items:center; gap:7px; background:rgba(232,168,56,.08); border:1px solid rgba(232,168,56,.15); border-radius:var(--radius-sm); padding:7px 10px; margin-bottom:9px; }
+.repo-no-pedido i { font-size:15px; color:var(--warn); flex-shrink:0; }
+.repo-no-pedido span { font-size:11px; color:var(--warn); }
+
+.repo-tiempo-box { background:var(--navy2); border-radius:var(--radius-sm); padding:8px 10px; margin-bottom:9px; }
+.repo-tiempo-row { display:flex; justify-content:space-between; align-items:center; }
+.repo-tiempo-lbl { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text2); }
+.repo-tiempo-lbl i { font-size:14px; }
+.repo-tiempo-val { font-size:12px; font-weight:600; }
+.repo-tiempo-val.entrada { color:#5BA3E8; }
+.repo-tiempo-val.salida  { color:#E05252; }
+.repo-duracion { display:flex; align-items:center; gap:6px; margin-top:7px; padding-top:7px; border-top:1px solid var(--border); }
+.repo-duracion i { font-size:16px; color:var(--accent); }
+.repo-duracion span { font-size:13px; font-weight:600; color:var(--accent); }
+
+.repo-btns { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.repo-btns.uno { grid-template-columns:1fr; }
+.repo-btn { display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); font-size:12px; font-weight:600; cursor:pointer; }
+.repo-btn i { font-size:17px; }
+.repo-btn.entrada { background:rgba(24,95,165,.15); border-color:#5BA3E8; color:#5BA3E8; }
+.repo-btn.salida  { background:rgba(224,82,82,.12);  border-color:#E05252; color:#E05252; }
+.repo-btn.repuesto{ background:rgba(46,204,138,.12); border-color:var(--accent); color:var(--accent); }
+.repo-btn:disabled{ opacity:.35; cursor:not-allowed; }
+
 /* ── SPINNER ──────────────────────────────────────────────── */
 .spinner { width:20px; height:20px; border:2px solid rgba(46,204,138,.3); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
@@ -383,11 +438,32 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
     </div>
   </div>
 
+  <!-- ══════════ REPOSITOR ══════════ -->
+  <div class="screen" id="screen-repositor">
+    <div class="repo-topbar">
+      <h1 id="repo-titulo">Mis visitas del día</h1>
+      <p id="repo-subtitulo">Cargando...</p>
+    </div>
+    <div class="repo-stats">
+      <div class="repo-stat"><div class="repo-stat-n" id="rs-total">0</div><div class="repo-stat-l">clientes hoy</div></div>
+      <div class="repo-stat"><div class="repo-stat-n naranja" id="rs-pend">0</div><div class="repo-stat-l">pendientes</div></div>
+      <div class="repo-stat"><div class="repo-stat-n verde" id="rs-ok">0</div><div class="repo-stat-l">repuestos</div></div>
+    </div>
+    <div class="repo-chips">
+      <div class="repo-chip active" onclick="setRepoFiltro('todos',this)">Todos</div>
+      <div class="repo-chip" onclick="setRepoFiltro('con',this)">Con pedido</div>
+      <div class="repo-chip" onclick="setRepoFiltro('sin',this)">Sin pedido</div>
+      <div class="repo-chip" onclick="setRepoFiltro('repuesto',this)">Repuestos ✓</div>
+    </div>
+    <div class="scroll-area" id="repo-lista"></div>
+  </div>
+
   <!-- ══════════ NAVBAR ══════════ -->
   <nav class="navbar" id="main-nav" style="display:none">
-    <button class="nav-btn active" id="nav-buscar" onclick="irA('buscar')"><i class="ti ti-search"></i>Buscar</button>
-    <button class="nav-btn"        id="nav-todos"  onclick="irA('todos')"><i class="ti ti-list"></i>Todos</button>
-    <button class="nav-btn"        id="nav-admin"  onclick="irA('admin')" id="nav-admin-btn"><i class="ti ti-upload"></i>Admin</button>
+    <button class="nav-btn active" id="nav-buscar"     onclick="irA('buscar')"><i class="ti ti-search"></i>Buscar</button>
+    <button class="nav-btn"        id="nav-todos"      onclick="irA('todos')"><i class="ti ti-list"></i>Todos</button>
+    <button class="nav-btn"        id="nav-repositor"  onclick="irA('repositor')" style="display:none"><i class="ti ti-list-check"></i>Mis visitas</button>
+    <button class="nav-btn"        id="nav-admin"      onclick="irA('admin')"><i class="ti ti-upload"></i>Admin</button>
   </nav>
 </div>
 
@@ -452,12 +528,25 @@ async function doLogin() {
     document.getElementById('user-avatar').textContent = res.nombre.charAt(0).toUpperCase();
     document.getElementById('main-nav').style.display = '';
 
-    // Ocultar Admin si no es logística/admin
+    // Mostrar/ocultar botones según rol
     const adminBtn = document.getElementById('nav-admin');
+    const repoBtn  = document.getElementById('nav-repositor');
+    const buscarBtn= document.getElementById('nav-buscar');
+    const todosBtn = document.getElementById('nav-todos');
+
     if (!['admin','logistica'].includes(res.rol)) adminBtn.style.display = 'none';
 
-    mostrarScreen('buscar');
-    cargarPedidos();
+    if (res.rol === 'repositor') {
+      // Repositor ve solo su pantalla
+      buscarBtn.style.display = 'none';
+      todosBtn.style.display  = 'none';
+      repoBtn.style.display   = '';
+      mostrarScreen('repositor');
+      cargarClientesRepositor();
+    } else {
+      mostrarScreen('buscar');
+      cargarPedidos();
+    }
   } catch(e) {
     setLoginError('Error de conexión. Verificá internet.');
   } finally {
@@ -842,6 +931,176 @@ function mostrarUploadStatusRepo(tipo, msg) {
 // ══════════════════════════════════════════════════════════════
 // NAVEGACIÓN
 // ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// REPOSITOR
+// ══════════════════════════════════════════════════════════════
+let repoClientes  = [];
+let repoFiltro    = 'todos';
+let repoVisitas   = {}; // { cod_cliente: { entrada, salida, repuesto } }
+
+async function cargarClientesRepositor() {
+  showLoading('Cargando tus clientes...');
+  try {
+    const dias = ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
+    const dia  = dias[new Date().getDay()];
+    const res  = await gasGet({
+      action:    'getClientesRepositor',
+      repositor: state.user.nombre,
+      dia
+    });
+    repoClientes = res.clientes || [];
+    const fecha  = new Date().toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
+    document.getElementById('repo-titulo').textContent    = `Mis visitas — ${dia.charAt(0)+dia.slice(1).toLowerCase()}`;
+    document.getElementById('repo-subtitulo').textContent = `${state.user.nombre} · ${repoClientes.length} clientes hoy`;
+    actualizarRepoStats();
+    renderRepoLista();
+  } catch(e) {
+    toast('Error al cargar clientes');
+  } finally {
+    hideLoading();
+  }
+}
+
+function actualizarRepoStats() {
+  const total   = repoClientes.length;
+  const repuesto= repoClientes.filter(c => repoVisitas[c.cod_cliente]?.repuesto).length;
+  const pend    = total - repuesto;
+  document.getElementById('rs-total').textContent = total;
+  document.getElementById('rs-pend').textContent  = pend;
+  document.getElementById('rs-ok').textContent    = repuesto;
+}
+
+function setRepoFiltro(f, el) {
+  repoFiltro = f;
+  document.querySelectorAll('.repo-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRepoLista();
+}
+
+function renderRepoLista() {
+  const lista = document.getElementById('repo-lista');
+  let vis = repoClientes;
+  if (repoFiltro === 'con')      vis = repoClientes.filter(c => c.tiene_pedido);
+  if (repoFiltro === 'sin')      vis = repoClientes.filter(c => !c.tiene_pedido);
+  if (repoFiltro === 'repuesto') vis = repoClientes.filter(c => repoVisitas[c.cod_cliente]?.repuesto);
+
+  if (!vis.length) {
+    lista.innerHTML = '<div class="empty"><i class="ti ti-search-off"></i><p>Sin clientes en esta categoría</p></div>';
+    return;
+  }
+  lista.innerHTML = vis.map(c => repoCard(c)).join('');
+}
+
+function repoCard(c) {
+  const v = repoVisitas[c.cod_cliente] || {};
+  const repuesto  = !!v.repuesto;
+  const enVisita  = v.entrada && !v.salida;
+  const completada= v.entrada && v.salida;
+
+  // Badge estado
+  let badgeCls = c.tiene_pedido ? 'con-pedido' : 'sin-pedido';
+  let badgeTxt = c.tiene_pedido ? 'Recibe pedido' : 'Visita rutina';
+  if (enVisita)  { badgeCls = 'en-visita'; badgeTxt = 'En visita...'; }
+  if (repuesto)  { badgeCls = 'repuesto';  badgeTxt = 'Repuesto ✓'; }
+
+  // Pill pedido
+  const pedidoPill = c.tiene_pedido
+    ? `<div class="repo-pedido-pill">
+        <i class="ti ti-package"></i>
+        <div>
+          <span class="rp-label">Pedido asignado · Repartidor</span>
+          <span class="rp-val">${esc(c.id_pedido)} · ${esc(c.repartidor)}</span>
+        </div>
+       </div>`
+    : `<div class="repo-no-pedido">
+        <i class="ti ti-package-off"></i>
+        <span>Sin pedido hoy — visita de rutina</span>
+       </div>`;
+
+  // Caja de tiempos
+  let tiempoBox = '';
+  if (v.entrada) {
+    const duracion = v.salida ? calcDuracion(v.entrada, v.salida) : '';
+    tiempoBox = `<div class="repo-tiempo-box">
+      <div class="repo-tiempo-row">
+        <span class="repo-tiempo-lbl"><i class="ti ti-login"></i>Entrada</span>
+        <span class="repo-tiempo-val entrada">${v.entrada}</span>
+      </div>
+      ${v.salida ? `<div class="repo-tiempo-row" style="margin-top:5px">
+        <span class="repo-tiempo-lbl"><i class="ti ti-logout"></i>Salida</span>
+        <span class="repo-tiempo-val salida">${v.salida}</span>
+      </div>` : ''}
+      ${duracion ? `<div class="repo-duracion"><i class="ti ti-clock-check"></i><span>${duracion} en el local</span></div>` : ''}
+    </div>`;
+  }
+
+  // Botones
+  const btnEntrada = `<button class="repo-btn entrada" onclick="marcarRepo('${esc(c.cod_cliente)}','entrada')" ${v.entrada?'disabled':''}><i class="ti ti-login"></i>Entrada</button>`;
+  const btnSalida  = `<button class="repo-btn salida"  onclick="marcarRepo('${esc(c.cod_cliente)}','salida')"  ${(!v.entrada||v.salida)?'disabled':''}><i class="ti ti-logout"></i>Salida</button>`;
+  const btnRep     = completada && !repuesto
+    ? `<div style="margin-top:7px"><button class="repo-btn repuesto" style="width:100%" onclick="marcarRepo('${esc(c.cod_cliente)}','repuesto')"><i class="ti ti-circle-check"></i>Confirmar reposición</button></div>`
+    : '';
+
+  return `<div class="repo-card">
+    <div class="repo-card-head">
+      <div class="repo-card-name">${esc(c.razon_social)}</div>
+      <span class="repo-badge ${badgeCls}">${badgeTxt}</span>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:4px">
+      <i class="ti ti-hash" style="font-size:13px"></i>Cód. ${esc(c.cod_cliente)}
+    </div>
+    ${pedidoPill}
+    ${tiempoBox}
+    <div class="repo-btns">${btnEntrada}${btnSalida}</div>
+    ${btnRep}
+  </div>`;
+}
+
+function calcDuracion(entrada, salida) {
+  const [eh,em] = entrada.split(':').map(Number);
+  const [sh,sm] = salida.split(':').map(Number);
+  const min = (sh*60+sm)-(eh*60+em);
+  if (min <= 0) return '';
+  return min < 60 ? `${min} min` : `${Math.floor(min/60)}h ${min%60}m`;
+}
+
+function ahora() {
+  const d = new Date();
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+async function marcarRepo(codCli, tipo) {
+  const hora = ahora();
+  if (!repoVisitas[codCli]) repoVisitas[codCli] = {};
+  const v = repoVisitas[codCli];
+
+  if (tipo === 'entrada')  v.entrada  = hora;
+  if (tipo === 'salida')   v.salida   = hora;
+  if (tipo === 'repuesto') v.repuesto = true;
+
+  // Actualizar UI inmediatamente (optimistic)
+  actualizarRepoStats();
+  renderRepoLista();
+
+  // Guardar en GAS
+  const cli = repoClientes.find(c => c.cod_cliente === codCli);
+  try {
+    await gasPost({
+      action:       'registrarVisita',
+      repositor:    state.user.nombre,
+      cod_cliente:  codCli,
+      razon_social: cli ? cli.razon_social : '',
+      id_pedido:    cli ? cli.id_pedido : '',
+      tipo,
+      dia:          ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'][new Date().getDay()]
+    });
+    const msgs = { entrada:'Entrada registrada ✓', salida:'Salida registrada ✓', repuesto:'Reposición confirmada ✓' };
+    toast(msgs[tipo] || 'Guardado');
+  } catch(e) {
+    toast('Sin conexión — se guardará al reconectar');
+  }
+}
+
 function mostrarScreen(nombre) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + nombre).classList.add('active');
@@ -854,7 +1113,6 @@ function irA(nombre) {
   const btn = document.getElementById('nav-' + nombre);
   if (btn) btn.classList.add('active');
   if (nombre === 'todos') renderTodos();
-  // Cargar SheetJS solo cuando entra a Admin por primera vez
   if (nombre === 'admin' && typeof XLSX === 'undefined') {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
