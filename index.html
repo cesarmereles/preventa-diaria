@@ -61,7 +61,7 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
 
 /* ── NAV BAR ──────────────────────────────────────────────── */
 .navbar {
-  display:grid; grid-template-columns:repeat(3,1fr);
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(60px, 1fr));
   background:var(--navy2); border-top:1px solid var(--border);
   position:absolute; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
   padding-bottom: env(safe-area-inset-bottom);
@@ -254,6 +254,35 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
 .repo-btn.salida  { background:rgba(224,82,82,.12);  border-color:#E05252; color:#E05252; }
 .repo-btn.repuesto{ background:rgba(46,204,138,.12); border-color:var(--accent); color:var(--accent); }
 .repo-btn:disabled{ opacity:.35; cursor:not-allowed; }
+
+/* ── DASHBOARD SUPERVISOR ────────────────────────────────── */
+.dash-topbar { background:linear-gradient(135deg,#0d2440 0%,#1a3a5c 100%); padding:12px 14px 10px; flex-shrink:0; }
+.dash-topbar h1 { font-size:16px; font-weight:600; color:#fff; }
+.dash-topbar p  { font-size:11px; color:var(--text2); margin-top:2px; }
+
+.dash-kpis { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; padding:10px 14px; flex-shrink:0; background:var(--navy2); border-bottom:1px solid var(--border); }
+.dash-kpi { background:var(--card); border-radius:var(--radius-sm); padding:10px 12px; }
+.dash-kpi-n { font-size:22px; font-weight:700; color:var(--text); }
+.dash-kpi-n.verde  { color:var(--accent); }
+.dash-kpi-n.azul   { color:#5BA3E8; }
+.dash-kpi-n.naranja{ color:var(--warn); }
+.dash-kpi-l { font-size:11px; color:var(--text2); margin-top:2px; }
+
+.dash-section-title { font-size:11px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; margin:12px 0 8px; display:flex; align-items:center; gap:5px; }
+.dash-section-title i { font-size:14px; color:var(--accent); }
+
+.rep-row { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:11px 13px; margin-bottom:8px; }
+.rep-row-head { display:flex; align-items:center; gap:9px; margin-bottom:8px; }
+.rep-avatar { width:32px; height:32px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--accent); flex-shrink:0; }
+.rep-row-name { font-size:13px; font-weight:600; color:var(--text); flex:1; }
+.rep-row-zona { font-size:11px; color:var(--text2); }
+.rep-row-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:8px; }
+.rep-stat-mini { background:var(--navy2); border-radius:6px; padding:6px 8px; text-align:center; }
+.rep-stat-mini-n { font-size:16px; font-weight:600; color:var(--text); }
+.rep-stat-mini-l { font-size:10px; color:var(--text2); margin-top:1px; }
+.rep-progress { height:5px; background:var(--navy2); border-radius:3px; overflow:hidden; }
+.rep-progress-fill { height:100%; background:var(--accent); border-radius:3px; transition:width .4s; }
+.rep-progress-label { display:flex; justify-content:space-between; font-size:10px; color:var(--text2); margin-bottom:3px; }
 
 /* ── SPINNER ──────────────────────────────────────────────── */
 .spinner { width:20px; height:20px; border:2px solid rgba(46,204,138,.3); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; }
@@ -458,11 +487,27 @@ html, body { height: 100%; overflow: hidden; background: #0f1923; font-family: -
     <div class="scroll-area" id="repo-lista"></div>
   </div>
 
+  <!-- ══════════ DASHBOARD ══════════ -->
+  <div class="screen" id="screen-dashboard">
+    <div class="dash-topbar">
+      <h1>Dashboard Reposición</h1>
+      <p id="dash-fecha">Cargando...</p>
+    </div>
+    <div class="dash-kpis">
+      <div class="dash-kpi"><div class="dash-kpi-n azul" id="dk-visitas">—</div><div class="dash-kpi-l">visitas completadas</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-n verde" id="dk-repuestos">—</div><div class="dash-kpi-l">reposiciones ✓</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-n naranja" id="dk-horas">—</div><div class="dash-kpi-l">horas totales</div></div>
+      <div class="dash-kpi"><div class="dash-kpi-n" id="dk-prom">—</div><div class="dash-kpi-l">promedio por visita</div></div>
+    </div>
+    <div class="scroll-area" id="dash-area"></div>
+  </div>
+
   <!-- ══════════ NAVBAR ══════════ -->
   <nav class="navbar" id="main-nav" style="display:none">
     <button class="nav-btn active" id="nav-buscar"     onclick="irA('buscar')"><i class="ti ti-search"></i>Buscar</button>
     <button class="nav-btn"        id="nav-todos"      onclick="irA('todos')"><i class="ti ti-list"></i>Todos</button>
     <button class="nav-btn"        id="nav-repositor"  onclick="irA('repositor')" style="display:none"><i class="ti ti-list-check"></i>Mis visitas</button>
+    <button class="nav-btn"        id="nav-dashboard"  onclick="irA('dashboard')" style="display:none"><i class="ti ti-chart-bar"></i>Dashboard</button>
     <button class="nav-btn"        id="nav-admin"      onclick="irA('admin')"><i class="ti ti-upload"></i>Admin</button>
   </nav>
 </div>
@@ -536,6 +581,10 @@ async function doLogin() {
 
     if (!['admin','logistica'].includes(res.rol)) adminBtn.style.display = 'none';
 
+    // Mostrar dashboard solo para admin y logistica
+    const dashBtn = document.getElementById('nav-dashboard');
+    if (['admin','logistica'].includes(res.rol)) dashBtn.style.display = '';
+
     if (res.rol === 'repositor') {
       // Repositor ve solo su pantalla
       buscarBtn.style.display = 'none';
@@ -594,7 +643,13 @@ async function cargarPedidos() {
         .join(' ').toLowerCase();
       return obj;
     });
-    state.fechaCarga = res.fecha  || new Date().toLocaleDateString('es-AR');
+    const fechaRaw = res.fecha || '';
+    // Normalizar fecha: puede venir como ISO o como string local
+    let fechaDisplay = fechaRaw;
+    if (fechaRaw && fechaRaw.includes('T')) {
+      fechaDisplay = new Date(fechaRaw).toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' });
+    }
+    state.fechaCarga = fechaDisplay || new Date().toLocaleDateString('es-AR');
     document.getElementById('fecha-label').textContent =
       `${state.pedidos.length} pedidos — ${state.fechaCarga}`;
     document.getElementById('todos-count').textContent =
@@ -1101,6 +1156,89 @@ async function marcarRepo(codCli, tipo) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD SUPERVISOR
+// ══════════════════════════════════════════════════════════════
+async function cargarDashboard() {
+  showLoading('Cargando dashboard...');
+  try {
+    const res = await gasGet({ action: 'getResumenReposicion' });
+    const resumen = res.resumen || [];
+    const fecha   = res.fecha   || new Date().toLocaleDateString('es-AR');
+    document.getElementById('dash-fecha').textContent = `Hoy — ${fecha}`;
+
+    // KPIs globales
+    const totalVisitas  = resumen.reduce((a,r) => a + (r.visitas||0), 0);
+    const totalRepuestos= resumen.reduce((a,r) => a + (r.repuestos||0), 0);
+    const totalMin      = resumen.reduce((a,r) => a + (r.total_min||0), 0);
+    const promMin       = totalVisitas ? Math.round(totalMin / totalVisitas) : 0;
+
+    document.getElementById('dk-visitas').textContent  = totalVisitas;
+    document.getElementById('dk-repuestos').textContent= totalRepuestos;
+    document.getElementById('dk-horas').textContent    = fmtMin(totalMin);
+    document.getElementById('dk-prom').textContent     = promMin ? fmtMin(promMin) : '—';
+
+    renderDashboard(resumen);
+  } catch(e) {
+    toast('Error al cargar dashboard');
+  } finally {
+    hideLoading();
+  }
+}
+
+function fmtMin(m) {
+  if (!m) return '0 min';
+  if (m < 60) return `${m} min`;
+  return `${Math.floor(m/60)}h ${m%60}m`;
+}
+
+function renderDashboard(resumen) {
+  const area = document.getElementById('dash-area');
+  if (!resumen.length) {
+    area.innerHTML = '<div class="empty"><i class="ti ti-chart-bar"></i><p>Sin datos de reposición hoy</p></div>';
+    return;
+  }
+
+  // Ordenar por total_min descendente
+  resumen.sort((a,b) => (b.total_min||0) - (a.total_min||0));
+  const maxMin = resumen[0].total_min || 1;
+
+  area.innerHTML = `
+    <div class="dash-section-title"><i class="ti ti-users"></i>Por repositor</div>
+    ${resumen.map(r => {
+      const ini  = (r.repositor||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const pct  = Math.round(((r.total_min||0) / maxMin) * 100);
+      const prom = r.visitas ? Math.round((r.total_min||0) / r.visitas) : 0;
+      return `<div class="rep-row">
+        <div class="rep-row-head">
+          <div class="rep-avatar">${esc(ini)}</div>
+          <div style="flex:1">
+            <div class="rep-row-name">${esc(r.repositor)}</div>
+          </div>
+        </div>
+        <div class="rep-row-stats">
+          <div class="rep-stat-mini">
+            <div class="rep-stat-mini-n">${r.visitas||0}</div>
+            <div class="rep-stat-mini-l">visitas</div>
+          </div>
+          <div class="rep-stat-mini">
+            <div class="rep-stat-mini-n">${r.repuestos||0}</div>
+            <div class="rep-stat-mini-l">repuestos</div>
+          </div>
+          <div class="rep-stat-mini">
+            <div class="rep-stat-mini-n">${fmtMin(prom)}</div>
+            <div class="rep-stat-mini-l">promedio</div>
+          </div>
+        </div>
+        <div class="rep-progress-label">
+          <span>${fmtMin(r.total_min||0)} trabajados</span>
+          <span>${pct}% del máximo</span>
+        </div>
+        <div class="rep-progress"><div class="rep-progress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('')}`;
+}
+
 function mostrarScreen(nombre) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + nombre).classList.add('active');
@@ -1113,6 +1251,7 @@ function irA(nombre) {
   const btn = document.getElementById('nav-' + nombre);
   if (btn) btn.classList.add('active');
   if (nombre === 'todos') renderTodos();
+  if (nombre === 'dashboard') cargarDashboard();
   if (nombre === 'admin' && typeof XLSX === 'undefined') {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
@@ -1134,11 +1273,9 @@ async function gasGet(params) {
 }
 
 async function gasPost(body) {
-  // GAS requiere text/plain para evitar preflight CORS
-  const res = await fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(body),
+  // Enviamos como GET con payload en base64 para evitar CORS preflight
+  const payload = encodeURIComponent(JSON.stringify(body));
+  const res = await fetch(`${GAS_URL}?method=POST&payload=${payload}`, {
     redirect: 'follow',
   });
   return res.json();
