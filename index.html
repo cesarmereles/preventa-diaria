@@ -1134,9 +1134,12 @@ async function gasGet(params) {
 }
 
 async function gasPost(body) {
+  // GAS requiere text/plain para evitar preflight CORS
   const res = await fetch(GAS_URL, {
     method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(body),
+    redirect: 'follow',
   });
   return res.json();
 }
