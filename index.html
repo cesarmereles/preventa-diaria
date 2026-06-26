@@ -404,6 +404,7 @@ let state = {
   pedidoActivo: null,
   screenAnterior: 'buscar',
   excelData: null,     // pedidos parseados del Excel listo para subir
+  repoData: null,      // maestro repositores listo para subir
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -746,6 +747,67 @@ async function subirExcel() {
 
 function mostrarUploadStatus(tipo, msg) {
   const el = document.getElementById('upload-status');
+  el.innerHTML = `<div class="status-bar-msg ${tipo}"><i class="ti ti-${tipo==='success'?'circle-check':'alert-circle'}"></i><span>${msg}</span></div>`;
+}
+
+// ── MAESTRO REPOSITORES ────────────────────────────────────
+function onDropRepo(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone-repo').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) procesarArchivoRepo(file);
+}
+
+function onFileSelectRepo(input) {
+  if (input.files[0]) procesarArchivoRepo(input.files[0]);
+}
+
+function procesarArchivoRepo(file) {
+  document.getElementById('file-name-repo').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb   = XLSX.read(e.target.result, { type:'array' });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
+      if (!rows.length) { mostrarUploadStatusRepo('error','El archivo está vacío'); return; }
+      state.repoData = rows.map(r => ({
+        IDREPOSITOR: String(r['IDREPOSITOR'] || r['idrepositor'] || ''),
+        REPOSITOR:   String(r['REPOSITOR']   || r['repositor']   || ''),
+        CODCLI:      String(r['CODCLI']       || r['codcli']       || ''),
+        RAZON_SOCIAL:String(r['RAZON SOCIAL'] || r['RAZON_SOCIAL'] || r['razon_social'] || ''),
+        DIA_VISITA:  String(r['DIA-VISITA']   || r['DIA_VISITA']   || r['dia_visita']   || ''),
+      }));
+      mostrarUploadStatusRepo('success', `✓ ${rows.length} registros listos para subir`);
+      document.getElementById('upload-btn-repo').disabled = false;
+    } catch(err) {
+      mostrarUploadStatusRepo('error', 'Error al leer el archivo.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function subirMaestroRepositores() {
+  if (!state.repoData) return;
+  showLoading('Subiendo maestro...');
+  try {
+    const res = await gasPost({ action:'subirMaestroRepositores', registros: state.repoData });
+    if (res.error) throw new Error(res.error);
+    mostrarUploadStatusRepo('success', `✓ ${res.total} registros cargados correctamente`);
+    toast('Maestro de repositores actualizado');
+    state.repoData = null;
+    document.getElementById('upload-btn-repo').disabled = true;
+    document.getElementById('file-name-repo').textContent = 'MAESTRO-REPOSITORES.xlsx';
+    document.getElementById('file-input-repo').value = '';
+  } catch(e) {
+    mostrarUploadStatusRepo('error', 'Error al subir. Intentá de nuevo.');
+  } finally {
+    hideLoading();
+  }
+}
+
+function mostrarUploadStatusRepo(tipo, msg) {
+  const el = document.getElementById('upload-status-repo');
   el.innerHTML = `<div class="status-bar-msg ${tipo}"><i class="ti ti-${tipo==='success'?'circle-check':'alert-circle'}"></i><span>${msg}</span></div>`;
 }
 
